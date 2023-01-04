@@ -8,6 +8,7 @@
 
 from Bio import SeqIO
 import argparse
+import time
 
 def Argparse():
     '''
@@ -45,38 +46,42 @@ def Gb2cds(output_cds):
     for seq_record in SeqIO.parse(args.genbank, 'genbank'):
         for seq_feature in seq_record.features:
 
-            if seq_feature.type == 'CDS' and seq_feature.qualifiers['gene'][0] not in geneNM:
-                output_cds.write(">{}\n".format(seq_feature.qualifiers['gene'][0]))
-                geneNM.append(seq_feature.qualifiers['gene'][0])
-                for n, seq_location in enumerate(seq_feature.location.parts):
-                    if n != len(seq_feature.location.parts)-1:
-                        if seq_location.strand == 1:
-                            output_cds.write("{}".format(seq_record.seq[seq_location.start:seq_location.end]))
-                        else:
-                            output_cds.write("{}".format(seq_record.seq[seq_location.start:seq_location.end].reverse_complement()))
-                    else:
-                        if seq_location.strand == 1:
-                            output_cds.write("{}\n".format(seq_record.seq[seq_location.start:seq_location.end]))
-                        else:
-                            output_cds.write("{}\n".format(seq_record.seq[seq_location.start:seq_location.end].reverse_complement()))
+            if seq_feature.type == 'CDS':
+                if 'gene' in seq_feature.qualifiers:
+                    if seq_feature.qualifiers['gene'][0] not in geneNM:
+                        output_cds.write(">{}\n".format(seq_feature.qualifiers['gene'][0]))
+                        geneNM.append(seq_feature.qualifiers['gene'][0])
+                        for n, seq_location in enumerate(seq_feature.location.parts):
+                            if n != len(seq_feature.location.parts)-1:
+                                if seq_location.strand == 1:
+                                    output_cds.write("{}".format(seq_record.seq[seq_location.start:seq_location.end]))
+                                else:
+                                    output_cds.write("{}".format(seq_record.seq[seq_location.start:seq_location.end].reverse_complement()))
+                            else:
+                                if seq_location.strand == 1:
+                                    output_cds.write("{}\n".format(seq_record.seq[seq_location.start:seq_location.end]))
+                                else:
+                                    output_cds.write("{}\n".format(seq_record.seq[seq_location.start:seq_location.end].reverse_complement()))
 
-            elif seq_feature.type == 'CDS' and seq_feature.qualifiers['gene'][0] in geneNM:
-                output_cds.write(">{}_copy\n".format(seq_feature.qualifiers['gene'][0]))
-                for n, seq_location in enumerate(seq_feature.location.parts):
-                    if n != len(seq_feature.location.parts)-1:
-                        if seq_location.strand == 1:
-                            output_cds.write("{}".format(seq_record.seq[seq_location.start:seq_location.end]))
-                        else:
-                            output_cds.write("{}".format(seq_record.seq[seq_location.start:seq_location.end].reverse_complement()))
                     else:
-                        if seq_location.strand == 1:
-                            output_cds.write("{}\n".format(seq_record.seq[seq_location.start:seq_location.end]))
-                        else:
-                            output_cds.write("{}\n".format(seq_record.seq[seq_location.start:seq_location.end].reverse_complement()))
+                        output_cds.write(">{}_copy\n".format(seq_feature.qualifiers['gene'][0]))
+                        for n, seq_location in enumerate(seq_feature.location.parts):
+                            if n != len(seq_feature.location.parts)-1:
+                                if seq_location.strand == 1:
+                                    output_cds.write("{}".format(seq_record.seq[seq_location.start:seq_location.end]))
+                                else:
+                                    output_cds.write("{}".format(seq_record.seq[seq_location.start:seq_location.end].reverse_complement()))
+                            else:
+                                if seq_location.strand == 1:
+                                    output_cds.write("{}\n".format(seq_record.seq[seq_location.start:seq_location.end]))
+                                else:
+                                    output_cds.write("{}\n".format(seq_record.seq[seq_location.start:seq_location.end].reverse_complement()))
+
 
 if __name__ == "__main__":
     args = Argparse()
-
+    # start_time = time.time()
+    # print("\033[1;32;40mWaiting...\033[0m")
     if args.faa:
         with open(args.faa, 'w') as output_faa:
             Gb2Fasta(output_faa)
@@ -88,3 +93,6 @@ if __name__ == "__main__":
     if args.cds:
         with open(args.cds, 'w') as output_cds:
             Gb2cds(output_cds)
+
+    end_time = time.time()
+    # print('Took %f second' % (end_time - start_time))
